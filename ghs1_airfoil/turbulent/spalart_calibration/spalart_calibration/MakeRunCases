@@ -1,0 +1,75 @@
+#!/bin/sh
+cd ${0%/*} || exit 1                        # Run from this directory
+
+GetAttribute()
+{ 	# grep - 1. line kde se vyskytne jmeno atributu, hodnoty v zavorce () a ;
+	# sed - replace vsechno krom obsahu zavorky
+	# napr radek: 
+	# 				angles   ( 12 32 ) ;
+	# bude:"12 32"	 
+	grep -m 1 '\s*'$1'\s*(.*)\s*;' $dict | sed 's/\s*'$1'\s*(\s*\(.*\)\s*)\s*;.*/\1/'
+}
+
+dict="setupDict"
+casePrefix="spalart"
+
+inits=`GetAttribute nuTildaInitial`
+inlets=`GetAttribute nuTildaInlet`
+
+	#make results directory
+if [ ! -d results ]; then
+	mkdir results 
+	[ "$?" -ne "0" ] && \
+		echo "Failed to create results directory!" && \
+		exit 3
+fi
+
+for init in $inits
+do
+	for inlet in $inlets
+	do
+		
+		#copy template directory
+		newdir=${casePrefix}_${init}_${inlet}
+		cp -r template $newdir
+		
+		#set correct values of Ux and Uy in 0/U init condition
+		sed -i "s/<nuTilda_initial>/$init/g" ${newdir}/0/nuTilda
+		sed -i "s/<nuTilda_inlet>/$inlet/g" ${newdir}/0/nuTilda
+		
+		simpleFoam -case "$newdir" -dry-run 1> /dev/null
+		if [ "$?" -ne "0" ]; then
+			echo "ERROR: Dry run for $newdir case failed!"
+			exit 2
+		else
+			echo "Dry tun for $newdir OK"
+		fi
+	done
+done
+
+echo
+
+for casedir in ${casePrefix}_*_*
+do
+	echo
+	echo "Running case $casedir"
+		#swich to case dir
+	cd $casedir
+		#run case
+	./Allrun
+	cd ..
+		#copy post process results to results dir
+	cp -r ${casedir}/postProcessing results/${casedir}_results
+	cp ${casedir}/log.postProcess results/${casedir}_results/log.postProcess
+	cp ${casedir}/log.simpleFoam results/${casedir}_results/log.simpleFoam
+done
+
+./ShowResults
+
+echo
+echo Exit
+
+exit 0
+
+#------------------------------------------------------------------------------
+

@@ -1,0 +1,68 @@
+
+//nejlepsi shoda okolo value intlet 3.4e-04
+
+Results for case spalart_7.5e-05_3.30e-04
+Pressure loss 1-2        [%]: 1.904731271597238
+Pressure loss In-Out     [%]: 2.0407165398173563
+Compression ratio 1-2    [1]: 1.035164409168634
+Compression ratio In-Out [1]: 1.037762818695983
+Volume flow 2         [ms-2]: 0.06843372621253428
+Volume flow Out       [ms-2]: 0.06843363593023294
+Force component in x: -5.720750905758 
+Force component in y: 8.193407795226
+WARNING: Solution did not converge!
+
+Results for case spalart_7.5e-05_3.37e-04
+Pressure loss 1-2        [%]: 1.9066818741359643
+Pressure loss In-Out     [%]: 2.042651350680179
+Compression ratio 1-2    [1]: 1.0351999302118529
+Compression ratio In-Out [1]: 1.0377980848318724
+Volume flow 2         [ms-2]: 0.06843372659969263
+Volume flow Out       [ms-2]: 0.06843363694916485
+Force component in x: -5.720423826890 
+Force component in y: 8.193273091088
+SIMPLE solution converged in 1511 iterations
+
+Results for case spalart_7.5e-05_3.38e-04
+Pressure loss 1-2        [%]: 1.906257787659246
+Pressure loss In-Out     [%]: 2.0422412004290535
+Compression ratio 1-2    [1]: 1.0351920301501418
+Compression ratio In-Out [1]: 1.037790425843234
+Volume flow 2         [ms-2]: 0.06843372695530882
+Volume flow Out       [ms-2]: 0.06843363686061815
+Force component in x: -5.720427766097 
+Force component in y: 8.193294398770
+SIMPLE solution converged in 1514 iterations
+
+Results for case spalart_7.5e-05_3.39e-04
+Pressure loss 1-2        [%]: 1.9070053923470294
+Pressure loss In-Out     [%]: 2.042994992688883
+Compression ratio 1-2    [1]: 1.0352057641553325
+Compression ratio In-Out [1]: 1.0378043082943438
+Volume flow 2         [ms-2]: 0.0684337269040312
+Volume flow Out       [ms-2]: 0.06843363688278244
+Force component in x: -5.720366916142 
+Force component in y: 8.193271018504
+SIMPLE solution converged in 1517 iterations
+
+Results for case spalart_7.5e-05_3.40e-04
+Pressure loss 1-2        [%]: 1.9069317680911135
+Pressure loss In-Out     [%]: 2.043014417387886
+Compression ratio 1-2    [1]: 1.0352043260068795
+Compression ratio In-Out [1]: 1.0378046444276212
+Volume flow 2         [ms-2]: 0.06843372728267941
+Volume flow Out       [ms-2]: 0.06843363593048925
+Force component in x: -5.720354544672 
+Force component in y: 8.193277283870
+WARNING: Solution did not converge!
+
+Results for case spalart_7.5e-05_3.41e-04
+Pressure loss 1-2        [%]: 1.9070933726058799
+Pressure loss In-Out     [%]: 2.0431066238205173
+Compression ratio 1-2    [1]: 1.0352072456455488
+Compression ratio In-Out [1]: 1.0378062332110658
+Volume flow 2         [ms-2]: 0.06843372677686287
+Volume flow Out       [ms-2]: 0.0684336367721147
+Force component in x: -5.720314028362 
+Force component in y: 8.193255187300
+SIMPLE solution converged in 1516 iterations

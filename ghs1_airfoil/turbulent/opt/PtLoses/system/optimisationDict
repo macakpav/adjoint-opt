@@ -1,0 +1,196 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v1912                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      optimisationDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+optimisationManager     steadyOptimisation;
+
+primalSolvers
+{
+    p1
+    {
+        active                 true;
+        type                   incompressible;
+        solver                 simple;
+        useSolverNameForFields false;
+        solutionControls //replaces entries in system/fvSolution/SIMPLE
+        {
+            nIters 5000;
+            nInitialIters 10000; // iterations for adj eq in 1st cycle (should be higher then nIters (defaults to nIters))
+            residualControl
+            {
+            	p           1e-3;
+    			U           1e-5;
+        		nuTilda     1e-5;
+        		//nut		1e-6;
+            }
+            averaging
+            {
+            	average false;
+            	//startIter 1000;
+            }
+        }
+        fvOptions{} //source terms from system/fvOptions 
+    }
+}
+
+adjointManagers
+{
+    am1
+    {
+        primalSolver			p1;
+        operatingPointWeight	1;
+        adjointSolvers
+        {
+            as1
+            {
+                // choose adjoint solver
+                //----------------------
+                active                 true;
+                type                   incompressible;
+                solver                 adjointSimple;
+                useSolverNameForFields true;
+                //computeSensitivities   true;
+
+                // manage objectives
+                //------------------
+                objectives
+                {
+                    type                incompressible;
+                    objectiveNames
+                    {
+                        lossIO
+                        {
+                        	type			PtLosses;
+                            weight          1.;
+                            patches         (PRESSURE-INLET PRESSURE-OUTLET);
+                        }
+                    }
+                }
+
+                // ATC treatment
+                //--------------
+                ATCModel
+                {
+                    ATCModel          standard;
+                    extraConvection   0;
+                    nSmooth           0;
+                    zeroATCPatchTypes ();
+                    maskType          faceCells;
+                }
+
+                // solution control
+                //------------------
+                solutionControls
+                {
+                    nIters 5000;
+                    printMaxMags true; // show maximum values of adjoint fields (stability indication)
+                    residualControl
+                    {
+                        "pa.*"       1.e-6;
+                        "Ua.*"       1.e-6;
+                        "nuaTilda.*" 1.e-7;
+                    }
+                }
+            } // End of as1
+			/*as2
+			{
+				// choose adjoint solver
+				//----------------------
+				active                 true;
+				type                   incompressible;
+				solver                 adjointSimple;
+				useSolverNameForFields true;
+				isConstraint           true;
+
+				// manage objectives
+				//------------------
+				objectives
+				{
+				    type                incompressible;
+				    objectiveNames
+				    {
+				        vol
+				        {
+				            weight          1;
+				            type            partialVolume;
+				            patches         (PROF);
+				        }
+				    }
+				}
+
+				// ATC treatment
+				//--------------
+				ATCModel
+				{
+				    ATCModel        standard;
+				}
+
+				// solution control
+				//------------------
+				solutionControls
+				{
+				    nIters 3000;
+				    residualControl
+				    {
+				        "pa.*"       1.e-7;
+				        "Ua.*"       1.e-7;
+				    }
+				}
+			} // End of as2*/
+		} // End of adjointSolvers
+    } // End of am1
+} // End of adjointManagers
+
+optimisation
+{
+	optimisationType
+	{
+		type			shapeOptimisation;
+		writeEachMesh	true;
+	}
+
+    sensitivities
+    {
+        type              volumetricBSplinesFI;
+        patches           (PROF);
+        surfaceSensitivities
+        {
+        	// iters 1000;
+        	// tolerance 1e-06;
+        	// includeDistance true;
+        	
+        }
+    }
+
+    updateMethod
+    {
+    	method BFGS;
+        BFGS
+        {
+            etaHessian        0.8;
+            nSteepestDescent  2;
+            scaleFirstHessian true;
+        }
+	}
+
+	meshMovement
+	{
+		type			volumetricBSplines;
+		maxAllowedDisplacement 1.e-5;
+	}
+
+} // End of optimisation
+
+// ************************************************************************* //
