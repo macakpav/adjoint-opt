@@ -1,3 +1,16 @@
+
+# Backup folder
+bu
+
+# Meshes folder
+
+meshes
+
+# Compressed files
+*.tar
+*.zip
+*.gz
+
 ################ C++ gitignore template from github ####################
 # Prerequisites
 *.d
