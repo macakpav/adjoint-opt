@@ -4,7 +4,7 @@ bu
 
 # Meshes folder
 
-meshes
+*/_mesh
 
 # Compressed files
 *.tar
