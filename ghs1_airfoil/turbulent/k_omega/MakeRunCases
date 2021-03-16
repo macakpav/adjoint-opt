@@ -1,0 +1,79 @@
+#!/bin/bash
+cd ${0%/*} || exit 1                        # Run from this directory
+
+GetAttribute()
+{ 	# grep - 1. line kde se vyskytne jmeno atributu, hodnoty v zavorce () a ;
+	# sed - replace vsechno krom obsahu zavorky
+	# napr radek: 
+	# 				angles   ( 12 32 ) ;
+	# bude:"12 32"	 
+	grep -m 1 '\s*'$1'\s*(.*)\s*;' $dict | sed 's/\s*'$1'\s*(\s*\(.*\)\s*)\s*;.*/\1/'
+}
+
+dict="setupDict"
+
+PI=3.141519265359
+zvuk=340 #speed of sound
+angles=`GetAttribute angles`
+machs=`GetAttribute machs`
+
+	#make results directory
+if [ ! -d results ]; then
+	mkdir results 
+	[ "$?" -ne "0" ] && \
+		echo "Failed to create results directory!" && \
+		exit 3
+fi
+
+for mach in $machs
+do
+	for alph in $angles
+	do
+		#calculate inlet velocity from "mach number"
+		Ux=`bc -l <<< "$zvuk*$mach*c($alph/180*$PI)"`
+		Uy=`bc -l <<< "$zvuk*$mach*s($alph/180*$PI)"`
+		
+		#copy template directory
+		newdir=man_${mach:2:3}_${alph}
+		cp -r template $newdir
+		
+		#set correct values of Ux and Uy in 0/U init condition
+		sed -i 's/<U_x>\s*<U_y>/'$Ux' '$Uy'/' ${newdir}/0/U
+		
+		
+		simpleFoam -case "$newdir" -dry-run 1> /dev/null
+		if [ "$?" -ne "0" ]; then
+			echo "ERROR: Dry run for $newdir case failed!"
+			exit 2
+		else
+			echo "Dry run for $newdir OK"
+		fi
+	done
+done
+
+echo
+
+for casedir in man_??_*
+do
+	echo
+	echo $casedir
+		#swich to case dir
+	cd $casedir
+		#run case
+	./Allrun
+	cd ..
+		#copy post process results to results dir
+	cp -r ${casedir}/postProcessing results/${casedir}_results
+	cp ${casedir}/log.postProcess results/${casedir}_results/log.postProcess
+	cp ${casedir}/log.simpleFoam results/${casedir}_results/log.simpleFoam
+done
+
+./ShowResults
+
+echo
+echo Exit
+
+exit 0
+
+#------------------------------------------------------------------------------
+
