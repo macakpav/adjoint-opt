@@ -1,0 +1,51 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v1912                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volVectorField;
+    object      U;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 1 -1 0 0 0 0];
+
+internalField   uniform (50 50 0);  
+
+boundaryField
+{
+    PRESSURE-INLET
+    {
+        type            fixedValue;
+        value			uniform (143.7682085 154.16660537 0);
+// Pro M=0.62 je to 340m/s * 0.62 * [cos(47deg) sin(47deg) 0]
+    }
+
+    PRESSURE-OUTLET
+    {
+        type            zeroGradient;
+    }
+
+    PROF
+    {
+        type            fixedValue;
+        value			uniform (0 0 0);
+    }
+
+    "PERIOD.*"
+    {
+        type cyclic;
+    }
+    frontAndBack
+    {
+        type            empty;
+    }
+}
+
+// ************************************************************************* //
