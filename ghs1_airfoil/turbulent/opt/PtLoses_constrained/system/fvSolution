@@ -24,7 +24,7 @@ solvers
         tolerance        1e-06;
         relTol           0.001;
     };
-    "m|ma"
+    "m.*|ma.*"
     {
         solver           PCG;
         preconditioner   DIC;
@@ -46,7 +46,7 @@ solvers
         relTol          0.001;
     }
 
-    "yWall|da"
+    "yWall.*|da.*"
     {
         solver           PBiCGStab;
         preconditioner   DILU;

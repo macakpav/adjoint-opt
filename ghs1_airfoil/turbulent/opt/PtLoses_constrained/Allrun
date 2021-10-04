@@ -8,7 +8,7 @@ rm -rf log* processor* postProcessing
 cd ./constant/controlPoints
 python3 ./cp_generator.py
 cd ../../
-runApplication decomposePar
+runApplication decomposePar -latestTime
 runParallel $(getApplication)
 runParallel cumulativeDisplacement
 runApplication reconstructPar
