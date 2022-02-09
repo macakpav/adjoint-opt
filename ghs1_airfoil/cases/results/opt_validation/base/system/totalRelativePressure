@@ -1,0 +1,28 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Version:  v1912
+    \\  /    A nd           | Website:  www.openfoam.com
+     \\/     M anipulation  |
+-------------------------------------------------------------------------------
+Description
+    Calculates the total pressure field for a case where the solver is
+    incompressible (pressure is kinematic, e.g. m^2/s^2).
+
+\*---------------------------------------------------------------------------*/
+
+type            totalPressureRelative;
+libs            ("libtotalPressureRelativeFunctionObject.so");
+
+executeControl  writeTime;
+writeControl    writeTime;
+log             false;
+
+
+mode          total;
+rho           rhoInf;
+URel    (0 -154.166 0);
+pRef    1e5;
+rhoInf  1.0;      // I celkovy tlak budeme pocitat jako kinematicky, proto nastavuji rhoInf=1 
+
+// ************************************************************************* //

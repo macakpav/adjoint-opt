@@ -1,0 +1,14 @@
+#!/bin/bash
+cd ${PBS_O_WORKDIR}
+
+source $WM_PROJECT_DIR/bin/tools/RunFunctions    
+
+rm -rf log* processor* postProcessing
+
+runApplication decomposePar -force -latestTime || exit 1
+runParallel simpleFoam
+runApplication reconstructPar || exit 1
+
+rm -rf processor*
+
+#------------------------------------------------------------------------------

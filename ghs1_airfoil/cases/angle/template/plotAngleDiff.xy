@@ -1,0 +1,13 @@
+#!/bin/sh
+
+gnuplot<<EOF
+	set terminal png size 800,600
+	set output 'figAngleDiff.png'
+	set grid
+	set xlabel "Iterace [1]"
+	set ylabel "Relativní rozdíl U_y a U_{yTarget} [1]"
+	set logscale y
+	set title "Konvergence optimalizace U_{yTarget}"
+	plot "optimisation/objective/0/angleas1" using 1:(abs((\$4-\$5)/\$5)) w lp t "UyRel", \
+		0.01 with lines lt 2 notitle
+EOF

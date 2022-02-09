@@ -1,0 +1,93 @@
+#!/bin/bash
+cd ${0%/*} || exit 1                        # Run from this directory
+
+# Creates new case files for validation (using 'base' folder as the new configuration)
+# Usage
+# validateOpt angle25_Uy ./rho1225/angle25_Uy 2:50
+
+WORKDIR="opt_validation"
+
+# name="$1"
+# caseDir="$2"
+
+timeDirs=""
+
+while [ "$#" -gt 0 ]
+do
+	key="$1"
+	shift
+	case "$key" in
+		*:*)
+			start=${key%%:*}
+			end=${key##*:}
+			if [[ "$start" =~ ^[0-9]+$ ]] && [[ "$end" =~ ^[0-9]+$ ]]; then
+				for ((i = $start ; i <= $end ; i++)); do
+  					timeDirs="$timeDirs $i"
+				done
+			else
+				echo Wrong range input, start or end is not an integer.
+				echo "$key"
+			fi
+		;;
+		*)
+			if ! [[ "$key" =~ ^[0-9]+$ ]]
+			then
+        			echo "Sorry integers only for timeDirs. Ignoring '$key'."
+        		else
+            			timeDirs="$timeDirs $key"
+        		fi
+
+
+	esac	
+done
+
+met='Uy Fy'
+ang='17 19 23 25 27 29'
+echo methods $met
+echo angles $ang
+echo timeDirs $timeDirs
+
+echo "OK to proceed? [y/n]"
+read answer
+if ! [ "$answer" == "y" ]; then
+	echo Terminating.
+	exit
+fi
+
+for a in $ang; do
+	for m in $met; do
+		name=angle${a}_${m}
+		caseDir=rho1225/$name
+
+		mkdir ${WORKDIR}/$name
+		for time in $timeDirs; do
+			newCaseDir="${WORKDIR}/${name}/${name}_${time}"
+			echo $newCaseDir
+			cp -r "${WORKDIR}/base" "$newCaseDir"
+			# rm -f "${newCaseDir}/constant/polyMesh/points"
+			cp "${caseDir}/${time}/polyMesh/points" "${newCaseDir}/constant/polyMesh/points"
+		done
+
+	done
+done
+
+exit 0
+
+echo caseDir $caseDir
+echo timeDirs $timeDirs
+echo name $name
+
+echo "OK to proceed? [y/n]"
+read answer
+if ! [ "$answer" == "y" ]; then
+	echo Terminating.
+	exit
+fi
+
+mkdir ${WORKDIR}/$name
+for time in $timeDirs; do
+	newCaseDir="${WORKDIR}/${name}/${name}_${time}"
+	cp -r "${WORKDIR}/base" "$newCaseDir"
+	# rm -f "${newCaseDir}/constant/polyMesh/points"
+	cp "${caseDir}/${time}/polyMesh/points" "${newCaseDir}/constant/polyMesh/points"
+done

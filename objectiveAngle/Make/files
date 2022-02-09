@@ -1,0 +1,4 @@
+outletAngle/outletAngle.C
+outletAnglePhi/outletAnglePhi.C
+
+LIB = $(FOAM_USER_LIBBIN)/libobjectiveAngle

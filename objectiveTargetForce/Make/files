@@ -1,0 +1,3 @@
+objectiveTargetForce.C
+
+LIB = $(FOAM_USER_LIBBIN)/libobjectiveTargetForce

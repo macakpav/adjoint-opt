@@ -1,0 +1,22 @@
+#!/bin/sh
+cd ${PBS_O_WORKDIR}
+
+. $WM_PROJECT_DIR/bin/tools/RunFunctions
+
+rm -rf log* processor* postProcessing
+
+cd ./constant/controlPoints
+python ./make_control_points.py
+cd ../../
+runApplication decomposePar || exit 1
+runParallel $(getApplication)
+runParallel cumulativeDisplacement
+runApplication reconstructPar || exit 1
+
+rm -rf processor*
+
+simpleFoam -postProcess
+postProcess -fields '(U)' -funcs '(components)'
+postProcess -fields '(U phi)' -funcs '(outletAverage)'
+
+#------------------------------------------------------------------------------

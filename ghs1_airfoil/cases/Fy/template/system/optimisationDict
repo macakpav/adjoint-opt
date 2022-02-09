@@ -1,0 +1,228 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v1912                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      optimisationDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+optimisationManager     steadyOptimisation;
+
+primalSolvers
+{
+    p1
+    {
+        active                 true;
+        type                   incompressible;
+        solver                 simple;
+        useSolverNameForFields false;
+        solutionControls //replaces entries in system/fvSolution/SIMPLE
+        {
+            nIters 5000;
+            nInitialIters 10000; // iterations for adj eq in 1st cycle (should be higher then nIters (defaults to nIters))
+            
+			nNonOrthogonalCorrectors 1;
+			consistent yes;
+
+			residualControl
+			{
+				p               1e-4;
+				U               1e-5;
+				nuTilda         1e-4;
+			}
+
+            averaging
+            {
+            	average false;
+            	//startIter 1000;
+            }
+        }
+        fvOptions{} //source terms from system/fvOptions 
+    }
+}
+
+adjointManagers
+{
+    am1
+    {
+        primalSolver			p1;
+        operatingPointWeight	1;
+        adjointSolvers
+        {
+            as1
+            {
+                // choose adjoint solver
+                //----------------------
+                active                 true;
+                type                   incompressible;
+                solver                 adjointSimple;
+                useSolverNameForFields true;
+
+                // manage objectives
+                //------------------
+                objectives
+                {
+                    type                incompressible;
+                    objectiveNames
+                    {
+                        // angle
+                        // {
+                        //     weight          1.;
+                        //     type            OutletAngle;
+                        //     outletPatch     "PRESSURE-OUTLET";
+                        //     UyTarget        60.23;
+                        //     //20.8,  21.8,  22.8,  24.8,  25.8,  26.8 deg
+                        //     //54.73, 57.63, 60.57, 66.58, 69.66, 72.79 targetUy2
+                        //     //orig: Ux2=144.09, Uy2=56.705, 23.8deg
+                        // }
+                        // drag
+                        // {
+                        //     weight          1.;
+                        //     type            force;
+                        //     patches         (PROF);
+                            
+                        //     //outlet design angle 20.6 (0.9360595357389733 0.35184164840470183 0);
+                        //     direction       (1 0 0);
+
+                        //     //should equal F/rho
+                        //     Aref            2.;
+                        //     rhoInf          1.;
+                        //     UInf            1.;
+                        // }
+                        targetForce
+                        {
+                            weight          1.;
+                            type            TargetForce;
+                            patches         (PROF);
+                            targetForce     (0 <targetFy> 0);
+                            rhoInf          1.225;
+                        }
+                    }
+                }
+
+                // ATC treatment
+                //--------------
+                ATCModel
+                {
+                    ATCModel          standard;
+                    extraConvection   0;
+                    nSmooth           0;
+                    zeroATCPatchTypes ();
+                    maskType          faceCells;
+                }
+
+                // solution control
+                //------------------
+                solutionControls
+                {
+                    nIters 5000;
+                    nNonOrthogonalCorrectors 1;
+                    consistent yes;
+                    residualControl
+                    {
+                        "pa.*"       1.e-6;
+                        "Ua.*"       1.e-6;
+                        "nuaTilda.*" 1.e-7;
+                    }
+                }
+            } // End of as1
+			vol
+            {
+                // choose adjoint solver
+                //----------------------
+                active                 true;
+                type                   incompressible;
+                solver                 adjointSimple;
+                useSolverNameForFields true;
+                isConstraint           true;
+                
+                // manage objectives
+                //------------------
+                objectives
+                {
+                    type                incompressible;
+                    objectiveNames
+                    {
+                        vol
+                        {
+                            weight          1;
+                            type            partialVolume;
+                            patches         (PROF);
+                        }
+                    }
+                }
+
+                // ATC treatment
+                //--------------
+                ATCModel
+                {
+                    ATCModel        standard;
+                }
+                
+                // solution control
+                //------------------
+                solutionControls
+                {
+                    nIters 3000;
+                    nNonOrthogonalCorrectors 1;
+                    consistent yes;
+                    residualControl
+                    {
+                        "pa.*"       1.e-7;
+                        "Ua.*"       1.e-7;
+                    }
+                }
+            } // End of vol
+		} // End of adjointSolvers
+    } // End of am1
+} // End of adjointManagers
+
+optimisation
+{
+	optimisationType
+	{
+		type			shapeOptimisation;
+		writeEachMesh	true;
+	}
+
+    sensitivities
+    {
+        type              volumetricBSplinesFI;
+        patches           (PROF);
+        surfaceSensitivities
+        {
+            iters 100;
+            tolerance 1e-06;
+            includeDistance true;
+        }
+    }
+
+    updateMethod
+    {
+        method constraintProjection;
+        lineSearch
+	    {
+            type ArmijoConditions;
+            minStep 1e-6;
+            c1    1e-3;
+            ratio 0.75;
+	    }
+    }
+
+	meshMovement
+	{
+		type			volumetricBSplines;
+		maxAllowedDisplacement 0.5e-3;
+	}
+
+} // End of optimisation
+
+// ************************************************************************* //

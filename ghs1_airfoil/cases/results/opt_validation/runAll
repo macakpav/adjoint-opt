@@ -1,0 +1,12 @@
+#!/bin/bash
+
+for dir in angle*; do
+	cd $dir
+	for d in angle*; do
+		cd $d
+		/home/macakpav/scripts/ofsub
+		cd ..
+	done
+	cd ..
+done
+

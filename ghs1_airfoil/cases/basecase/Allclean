@@ -1,0 +1,11 @@
+#!/bin/sh
+cd ${0%/*} || exit 1                        # Run from this directory
+
+rm -rf optimisation
+rm -rf constant/controlPoints/*Bsplines[1-9]*
+rm -rf 0/*.gz 0/parametricCoord*
+rm -rf log* processor* postProcessing
+rm -rf *[1-9]*
+rm -f *.out
+
+#------------------------------------------------------------------------------

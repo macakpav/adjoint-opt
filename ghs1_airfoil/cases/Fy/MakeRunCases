@@ -1,0 +1,120 @@
+#!/bin/bash
+cd ${0%/*} || exit 1                        # Run from this directory
+
+#------------------- Case specific settings --------------------
+
+make=true
+run=true
+dict="setupDict"
+
+# naming style of created directories 
+NewDirName() # 1st, 2nd, ... parameter
+{
+	echo "angleFy_${1:0:3}"
+}
+
+#------------------- Cluster specific settings -------------------
+
+SubmitJob()
+{
+	"/home/macakpav/scripts/ofsub"
+}
+
+#--------------------- Auxiliary functions ---------------------
+
+GetAttribute()
+{ 	# grep - 1. line kde se vyskytne jmeno atributu, hodnoty v zavorce () a ;
+	# sed - replace vsechno krom obsahu zavorky
+	# napr radek: 
+	# 				angles   ( 12 32 ) ;
+	# bude:"12 32"	 
+	grep -m 1 '\s*'$1'\s*(.*)\s*;' $dict | sed 's/\s*'$1'\s*(\s*\(.*\)\s*)\s*;.*/\1/'
+}
+
+ReplaceTemplate() # <NAME>, value, file
+{
+	if [ $# -ne 3 ]; then
+		echo "Wrong number of arguments to ReplaceTemplate()! Need 3, got $# - $@"
+		exit 1
+	fi
+	name="<$1>"
+	value="$2"
+	file="$3"
+
+	if [ ! -f ${file} ]; then
+		echo "Could not find file '${file}'."
+		exit 1
+	fi
+
+	sed -i "s/${name}/${value}/g" ${file}
+}
+
+#-------------------- Read flags ------------------------
+
+while [ "$#" -gt 0 ]
+do
+	key="$1"
+	shift
+	case "$key" in
+		-run)
+			run=true
+			;;
+		-make)
+			make=true
+			;;
+		-make-only | -onlymake | -makeOnly | -makeonly)
+			make=true
+			run=false
+			;;
+		-run-only | -onlyrun | -runOnly | -runonly)
+			run=true
+			make=false
+			;;
+		*)
+			echo "Unknown flag '$key'"
+			exit 1
+			;;
+	esac
+done
+		
+#------------------ Main code part ----------------------
+
+# read setupDict stuff
+echo "Reading '${dict}'..."
+targetFys=`GetAttribute targetFy`
+
+# create cases loop
+if [ "${make}" == "true" ]; then
+	echo "Creating case directories..."
+	for targetFy in $targetFys
+	do
+		newdir="$(NewDirName $targetFy)"
+		cp -r template "${newdir}"
+		
+		# set correct template values
+		ReplaceTemplate "targetFy" "${targetFy}" "${newdir}/system/optimisationDict"
+		
+	done
+fi
+
+echo
+
+# run cases loop
+if [ "${run}" == "true" ]; then
+	echo "Running cases..."
+	for targetFy in $targetFys
+	do
+		rundir="$(NewDirName $targetFy)"
+		cd "$rundir"
+		SubmitJob
+		cd ..
+	done
+fi
+
+echo
+echo Finished MakeRunCases.
+
+exit 0
+
+#--------------------------------- End ----------------------------------
+

@@ -1,4 +1,0 @@
-//parametry pro vytvoreni adresaru
-angles	 		( 47 ); //uhly nabehu
-machs			( 0.62 ); //machova cisla pro vypocet vstupni rychlosti
-
